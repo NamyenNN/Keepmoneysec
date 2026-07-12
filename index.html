@@ -1,172 +1,435 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ระบบเก็บตังค์กลุ่ม</title>
+
+<style>
+* {
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Prompt',sans-serif;
+}
+
+body {
+    background:linear-gradient(135deg,#ff9a9e,#fecfef);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+
+.glass-card {
+    background:rgba(255,255,255,.25);
+    box-shadow:0 8px 32px rgba(31,38,135,.37);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:40px;
+    width:100%;
+    max-width:400px;
+    text-align:center;
+}
+
+
+h1 {
+    color:white;
+    margin-bottom:15px;
+}
+
+
+.balance {
+    font-size:48px;
+    font-weight:bold;
+    color:white;
+    margin:20px;
+}
+
+
+input {
+    width:100%;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+    border:none;
+    text-align:center;
+}
+
+
+button {
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:10px;
+}
+
+
+.btn-login {
+    background:#a18cd1;
+}
+
+
+.btn-add {
+    background:#4facfe;
+}
+
+
+.btn-remove {
+    background:#ff0844;
+}
+
+
+.btn-group {
+    display:flex;
+    gap:10px;
+}
+
+
+.btn-group button {
+    flex:1;
+}
+
+
+.status {
+    color:white;
+    margin-top:15px;
+}
+
+
+.user-info {
+    color:white;
+    background:rgba(0,0,0,.1);
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+
+#dashboard {
+    display:none;
+}
+
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+
+</head>
+
+
+<body>
+
+
+<div class="glass-card" id="loginPage">
+
+<h1>เข้าสู่ระบบ 🔐</h1>
+
+<p style="color:white;margin-bottom:20px">
+กรุณากรอกรหัสนักศึกษา
+</p>
+
+
+<input id="studentId" placeholder="เช่น 660101">
+
+
+<button class="btn-login" onclick="checkLogin()">
+เข้าสู่ระบบ
+</button>
+
+
+<div class="status" id="loginStatus"></div>
+
+
+</div>
+
+
+
+
+
+<div class="glass-card" id="dashboard">
+
+
+<div class="user-info" id="userInfoDisplay"></div>
+
+
+<h1>
+ยอดเงินคงเหลือ 💰
+</h1>
+
+
+<div class="balance" id="balanceDisplay">
+Loading...
+</div>
+
+
+<input id="amount" type="number" placeholder="ใส่จำนวนเงิน">
+
+
+<div class="btn-group">
+
+<button class="btn-add" onclick="updateMoney('add')">
++ เพิ่มเงิน
+</button>
+
+
+<button class="btn-remove" onclick="updateMoney('remove')">
+- หักเงิน
+</button>
+
+</div>
+
+
+<div class="status" id="statusText">
+กำลังรอคำสั่ง...
+</div>
+
+
+</div>
+
+
+
+
+
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbyVaPxetXKM2zCrTZLhjXK7nD1vnxsYZFfJn2FtIVEQwA9T1d7ud3qEWbi9N_LS2O4Y/exec';
 
 
-async function checkLogin() {
-
-    let stdId = document.getElementById('studentId').value;
-    let loginStatus = document.getElementById('loginStatus');
-
-    if(!stdId) {
-        loginStatus.innerText = 'อย่าลืมกรอกรหัสนะแก!';
-        return;
-    }
-
-    loginStatus.innerText = 'กำลังตรวจรหัสแป๊บนึง... ⏳';
+const scriptURL =
+'https://script.google.com/macros/s/AKfycbyVaPxetXKM2zCrTZLhjXK7nD1vnxsYZFfJn2FtIVEQwA9T1d7ud3qEWbi9N_LS2O4Y/exec';
 
 
-    try {
 
-        let response = await fetch(scriptURL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
-            body: JSON.stringify({
-                action: 'login',
-                studentId: stdId
-            })
-        });
+async function checkLogin(){
 
 
-        let data = await response.json();
+let stdId =
+document.getElementById("studentId").value;
 
 
-        if(data.success) {
-
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+let status =
+document.getElementById("loginStatus");
 
 
-            document.getElementById('userInfoDisplay').innerText =
-            `สวัสดีแก! คุณ: ${data.user.name} (เลขที่ ${data.user.assignedNo})`;
 
+if(!stdId){
 
-            fetchBalance();
-
-
-        } else {
-
-            loginStatus.innerText = 'ไม่มีรหัสนี้ในระบบอ่าแก ❌';
-
-        }
-
-
-    } catch(error) {
-
-        console.log(error);
-        loginStatus.innerText = 'ระบบเชื่อมต่อขัดข้อง ลองอีกทีนะ 😢';
-
-    }
+status.innerText="กรอกรหัสก่อนแก!";
+return;
 
 }
 
 
 
-async function fetchBalance() {
-
-    try {
-
-        let response = await fetch(scriptURL);
-
-        let data = await response.json();
-
-        document.getElementById('balanceDisplay').innerText =
-        data.balance + ' ฿';
+status.innerText="กำลังตรวจสอบ...";
 
 
-    } catch(error) {
 
-        console.log(error);
-        document.getElementById('balanceDisplay').innerText = 'Error';
+try{
 
-    }
+
+let response =
+await fetch(scriptURL,{
+
+method:"POST",
+
+redirect:"follow",
+
+headers:{
+"Content-Type":"text/plain;charset=utf-8"
+},
+
+body:JSON.stringify({
+
+action:"login",
+
+studentId:stdId
+
+})
+
+});
+
+
+
+let data =
+await response.json();
+
+
+
+if(data.success){
+
+
+document.getElementById("loginPage").style.display="none";
+
+document.getElementById("dashboard").style.display="block";
+
+
+document.getElementById("userInfoDisplay").innerText =
+`สวัสดี ${data.user.name} (เลขที่ ${data.user.assignedNo})`;
+
+
+
+fetchBalance();
+
+
+
+}else{
+
+
+status.innerText="ไม่พบรหัส ❌";
+
 
 }
 
 
 
-async function updateMoney(action) {
-
-    let amount = document.getElementById('amount').value;
-    let statusText = document.getElementById('statusText');
+}catch(e){
 
 
-    if(!amount || amount <= 0) {
+console.log(e);
 
-        statusText.innerText = 'กรอกจำนวนเงินก่อนสิแก!';
-        return;
+status.innerText="เชื่อมต่อไม่ได้ 😢";
 
-    }
-
-
-    statusText.innerText = 'กำลังส่งข้อมูลเข้า Google Sheets... ⏳';
-
-
-    let finalAmount = action === 'add'
-        ? Number(amount)
-        : -Number(amount);
-
-
-
-    try {
-
-
-        let response = await fetch(scriptURL, {
-
-            method:'POST',
-
-            redirect:'follow',
-
-            headers:{
-                'Content-Type':'text/plain;charset=utf-8'
-            },
-
-
-            body:JSON.stringify({
-
-                action:'update',
-
-                amount:finalAmount
-
-            })
-
-        });
-
-
-
-        let data = await response.json();
-
-
-
-        if(data.success) {
-
-
-            document.getElementById('balanceDisplay').innerText =
-            data.newBalance + ' ฿';
-
-
-            statusText.innerText =
-            'อัปเดตยอดเงินเรียบร้อยแล้ว! 🎉';
-
-
-            document.getElementById('amount').value = '';
-
-        }
-
-
-    } catch(error) {
-
-
-        console.log(error);
-
-        statusText.innerText =
-        'เกิดข้อผิดพลาดในการอัปเดตยอด 😢';
-
-
-    }
 
 }
+
+
+}
+
+
+
+
+
+async function fetchBalance(){
+
+
+try{
+
+
+let response =
+await fetch(scriptURL);
+
+
+let data =
+await response.json();
+
+
+
+document.getElementById("balanceDisplay").innerText =
+data.balance+" ฿";
+
+
+
+}catch(e){
+
+
+document.getElementById("balanceDisplay").innerText="Error";
+
+
+}
+
+
+}
+
+
+
+
+
+async function updateMoney(action){
+
+
+let amount =
+Number(document.getElementById("amount").value);
+
+
+let status =
+document.getElementById("statusText");
+
+
+
+if(!amount || amount<=0){
+
+status.innerText="ใส่จำนวนเงินก่อน";
+return;
+
+}
+
+
+
+let finalAmount =
+action==="add" ? amount : -amount;
+
+
+
+try{
+
+
+let response =
+await fetch(scriptURL,{
+
+method:"POST",
+
+redirect:"follow",
+
+headers:{
+"Content-Type":"text/plain;charset=utf-8"
+},
+
+body:JSON.stringify({
+
+action:"update",
+
+amount:finalAmount
+
+})
+
+
+});
+
+
+
+let data =
+await response.json();
+
+
+
+if(data.success){
+
+
+document.getElementById("balanceDisplay").innerText =
+data.newBalance+" ฿";
+
+
+document.getElementById("amount").value="";
+
+
+status.innerText="อัปเดตแล้ว 🎉";
+
+
+}
+
+
+}catch(e){
+
+
+console.log(e);
+
+status.innerText="ผิดพลาด 😢";
+
+
+}
+
+
+}
+
 
 </script>
+
+
+</body>
+</html>
