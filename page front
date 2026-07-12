@@ -50,7 +50,7 @@
 
     <script>
         // แกจ๋า อย่าลืมลบคำข้างล่างนี้แล้วเอาลิงก์ Web App URL จากกูเกิลสคริปต์มาใส่ในเครื่องหมาย ' ' นะ!
-        const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL'; 
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyVaPxetXKM2zCrTZLhjXK7nD1vnxsYZFfJn2FtIVEQwA9T1d7ud3qEWbi9N_LS2O4Y/exec'; 
 
         async function checkLogin() {
             let stdId = document.getElementById('studentId').value;
