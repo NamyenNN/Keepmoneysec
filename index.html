@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Money SEC</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 
 <style>
 
@@ -20,28 +22,37 @@ align-items:center;
 padding:20px;
 }
 
+
 .card{
+
 background:white;
 border-radius:20px;
 padding:25px;
 width:100%;
 max-width:400px;
 box-shadow:0 10px 30px #0002;
+
 }
+
 
 h1{
 text-align:center;
 }
 
+
 input{
+
 width:100%;
 padding:12px;
 border-radius:10px;
 border:1px solid #ddd;
 margin-top:10px;
+
 }
 
+
 button{
+
 width:100%;
 padding:12px;
 margin-top:15px;
@@ -50,25 +61,45 @@ border-radius:10px;
 background:#ff6fa5;
 color:white;
 font-size:16px;
+
 }
 
+
 .item{
+
 background:#f5f5f5;
 padding:15px;
 border-radius:15px;
 margin-top:15px;
+
 }
+
 
 img{
+
 width:100%;
 margin-top:20px;
+
 }
+
 
 .hidden{
+
 display:none;
+
 }
 
+
+.status{
+
+margin-top:10px;
+color:#777;
+
+}
+
+
 </style>
+
 
 </head>
 
@@ -79,27 +110,43 @@ display:none;
 <div class="card">
 
 
+
+<!-- LOGIN -->
+
 <div id="login">
 
-<h1>🔐 Login</h1>
+
+<h1>
+🔐 Login
+</h1>
+
 
 <p id="lineName">
 กำลังเชื่อมต่อ LINE...
 </p>
 
 
-<input id="studentId"
+
+<input
+id="studentId"
 placeholder="เลขนักศึกษา">
 
 
+
 <button onclick="saveUser()">
+
 เข้าสู่ระบบ
+
 </button>
+
 
 
 </div>
 
 
+
+
+<!-- HOME -->
 
 <div id="home" class="hidden">
 
@@ -113,14 +160,20 @@ placeholder="เลขนักศึกษา">
 
 
 <div id="billList">
+
 กำลังโหลด...
-</div>
-
 
 </div>
 
 
 
+</div>
+
+
+
+
+
+<!-- DETAIL -->
 
 <div id="detail" class="hidden">
 
@@ -128,33 +181,50 @@ placeholder="เลขนักศึกษา">
 <h1 id="title"></h1>
 
 
+
 <h2>
+
 ยอด:
 <span id="amount"></span>
 บาท
+
 </h2>
+
+
+
+<p id="billStatus"></p>
+
 
 
 <img id="qr">
 
 
+
 <button onclick="back()">
+
 กลับ
+
 </button>
 
 
 </div>
 
 
+
+
 </div>
+
+
 
 
 
 <script>
 
 
+
 const LIFF_ID =
 "2010646520-HSdNTYeC";
+
 
 
 const API_URL =
@@ -166,12 +236,21 @@ let lineUser="";
 
 
 
+
+// =======================
+// LINE LOGIN
+// =======================
+
+
 async function init(){
 
 
 await liff.init({
+
 liffId:LIFF_ID
+
 });
+
 
 
 if(!liff.isLoggedIn()){
@@ -183,12 +262,15 @@ return;
 }
 
 
+
 const profile =
 await liff.getProfile();
 
 
+
 lineUser =
 profile.displayName;
+
 
 
 document.getElementById("lineName")
@@ -201,6 +283,13 @@ document.getElementById("lineName")
 
 
 
+
+
+// =======================
+// SAVE USER
+// =======================
+
+
 function saveUser(){
 
 
@@ -211,7 +300,7 @@ document.getElementById("studentId").value;
 
 if(!id){
 
-alert("ใส่เลขนักศึกษาก่อน");
+alert("กรอกเลขนักศึกษาก่อน");
 
 return;
 
@@ -253,96 +342,180 @@ document.getElementById("user")
 loadBills();
 
 
+
 }
 
 
 
 
+// =======================
+// LOAD BILLS
+// =======================
+
+
 async function loadBills(){
+
+
+const studentId =
+localStorage.getItem("studentId");
+
 
 
 const res =
 await fetch(
-API_URL+"?action=getBills"
+
+API_URL+
+"?action=getBills&studentId="
++studentId
+
 );
+
 
 
 const data =
 await res.json();
 
 
+
 let html="";
+
+
+
+if(data.bills.length===0){
+
+
+html=
+"ยังไม่มีรายการ";
+
+
+}
+
 
 
 data.bills.forEach(b=>{
 
 
-html+=`
+
+let date =
+new Date(b.month)
+.toLocaleDateString(
+"th-TH",
+{
+year:"numeric",
+month:"long"
+}
+);
+
+
+
+html += `
+
 
 <div class="item"
 onclick='openBill(${JSON.stringify(b)})'>
 
 
-📅 ${b.month}
+📅 ${date}
+
 
 <br>
+
 
 ${b.title}
 
+
 <br>
+
 
 💵 ${b.amount} บาท
 
 
+<br>
+
+
+สถานะ:
+${b.status || "ยังไม่จ่าย"}
+
+
 </div>
+
 
 `;
 
+
+
 });
+
 
 
 document.getElementById("billList")
 .innerHTML=html;
 
 
+
 }
 
 
+
+
+// =======================
+// OPEN QR
+// =======================
 
 
 function openBill(b){
 
 
-home.classList.add("hidden");
-
-detail.classList.remove("hidden");
-
-
-title.innerText=b.title;
-
-amount.innerText=b.amount;
+document.getElementById("home")
+.classList.add("hidden");
 
 
-qr.src=
-b.qr.replace(
-"https://drive.google.com/file/d/",
-"https://drive.google.com/uc?id="
-).split("/view")[0];
+
+document.getElementById("detail")
+.classList.remove("hidden");
+
+
+
+document.getElementById("title")
+.innerText=b.title;
+
+
+
+document.getElementById("amount")
+.innerText=b.amount;
+
+
+
+document.getElementById("billStatus")
+.innerText=
+"สถานะ: "+(b.status || "ยังไม่จ่าย");
+
+
+
+document.getElementById("qr")
+.src=b.qr;
+
 
 
 }
+
 
 
 
 function back(){
 
 
-detail.classList.add("hidden");
+document.getElementById("detail")
+.classList.add("hidden");
 
-home.classList.remove("hidden");
+
+
+document.getElementById("home")
+.classList.remove("hidden");
 
 
 }
+
 
 
 
