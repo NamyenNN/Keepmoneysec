@@ -6,61 +6,66 @@
 
 <title>Money SEC</title>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <style>
 
 body{
-    font-family:Arial,sans-serif;
-    background:#f8c8dc;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
+font-family:Arial,sans-serif;
+background:#f8c8dc;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
 }
 
 .card{
-    background:white;
-    border-radius:20px;
-    padding:25px;
-    width:100%;
-    max-width:400px;
-    box-shadow:0 10px 30px #0002;
+background:white;
+border-radius:20px;
+padding:25px;
+width:100%;
+max-width:400px;
+box-shadow:0 10px 30px #0002;
 }
 
 h1{
-    text-align:center;
+text-align:center;
 }
 
-.item{
-    background:#f5f5f5;
-    padding:15px;
-    border-radius:15px;
-    margin-top:15px;
-    cursor:pointer;
-}
-
-.item:hover{
-    background:#ffe4ef;
+input{
+width:100%;
+padding:12px;
+border-radius:10px;
+border:1px solid #ddd;
+margin-top:10px;
 }
 
 button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    background:#ff6fa5;
-    color:white;
-    font-size:16px;
-    margin-top:15px;
+width:100%;
+padding:12px;
+margin-top:15px;
+border:none;
+border-radius:10px;
+background:#ff6fa5;
+color:white;
+font-size:16px;
+}
+
+.item{
+background:#f5f5f5;
+padding:15px;
+border-radius:15px;
+margin-top:15px;
 }
 
 img{
-    width:100%;
-    margin-top:20px;
+width:100%;
+margin-top:20px;
 }
 
 .hidden{
-    display:none;
+display:none;
 }
 
 </style>
@@ -74,27 +79,59 @@ img{
 <div class="card">
 
 
-<div id="home">
+<div id="login">
 
-<h1>💰 Money SEC</h1>
+<h1>🔐 Login</h1>
 
-<p>รายการเก็บเงิน</p>
+<p id="lineName">
+กำลังเชื่อมต่อ LINE...
+</p>
+
+
+<input id="studentId"
+placeholder="เลขนักศึกษา">
+
+
+<button onclick="saveUser()">
+เข้าสู่ระบบ
+</button>
+
+
+</div>
+
+
+
+<div id="home" class="hidden">
+
+
+<h1>
+💰 Money SEC
+</h1>
+
+
+<p id="user"></p>
+
 
 <div id="billList">
 กำลังโหลด...
 </div>
 
+
 </div>
+
 
 
 
 <div id="detail" class="hidden">
 
+
 <h1 id="title"></h1>
 
+
 <h2>
-ยอดเงิน:
-<span id="amount"></span> บาท
+ยอด:
+<span id="amount"></span>
+บาท
 </h2>
 
 
@@ -113,13 +150,110 @@ img{
 
 
 
-
 <script>
 
 
-// ใส่ URL GAS ของแกตรงนี้
+const LIFF_ID =
+"2010646520-XCziyLXS";
+
+
 const API_URL =
 "https://script.google.com/macros/s/AKfycbwWDvTyjfJP9yYY-j1VoQvwH06_gkCroRnrSxMPiBzDHOdDTVE3C_uk654F8XEL1mBj/exec";
+
+
+
+let lineUser="";
+
+
+
+async function init(){
+
+
+await liff.init({
+liffId:LIFF_ID
+});
+
+
+if(!liff.isLoggedIn()){
+
+liff.login();
+
+return;
+
+}
+
+
+const profile =
+await liff.getProfile();
+
+
+lineUser =
+profile.displayName;
+
+
+document.getElementById("lineName")
+.innerText =
+"สวัสดี "+lineUser;
+
+
+
+}
+
+
+
+function saveUser(){
+
+
+let id =
+document.getElementById("studentId").value;
+
+
+
+if(!id){
+
+alert("ใส่เลขนักศึกษาก่อน");
+
+return;
+
+}
+
+
+
+localStorage.setItem(
+"studentId",
+id
+);
+
+
+
+localStorage.setItem(
+"lineName",
+lineUser
+);
+
+
+
+document.getElementById("login")
+.classList.add("hidden");
+
+
+
+document.getElementById("home")
+.classList.remove("hidden");
+
+
+
+document.getElementById("user")
+.innerText =
+"👤 "+lineUser+
+" | "+id;
+
+
+
+loadBills();
+
+
+}
 
 
 
@@ -127,51 +261,48 @@ const API_URL =
 async function loadBills(){
 
 
-    const res =
-    await fetch(
-        API_URL+"?action=getBills"
-    );
+const res =
+await fetch(
+API_URL+"?action=getBills"
+);
 
 
-    const data =
-    await res.json();
+const data =
+await res.json();
 
 
-
-    let html="";
-
-
-    data.bills.forEach(b=>{
+let html="";
 
 
-        html += `
-
-        <div class="item"
-        onclick='openBill(${JSON.stringify(b)})'>
+data.bills.forEach(b=>{
 
 
-        📅 ${b.month}
+html+=`
 
-        <br>
-
-        ${b.title}
-
-        <br>
-
-        💵 ${b.amount} บาท
+<div class="item"
+onclick='openBill(${JSON.stringify(b)})'>
 
 
-        </div>
+📅 ${b.month}
 
-        `;
+<br>
+
+${b.title}
+
+<br>
+
+💵 ${b.amount} บาท
 
 
-    });
+</div>
+
+`;
+
+});
 
 
-
-    document.getElementById("billList")
-    .innerHTML = html;
+document.getElementById("billList")
+.innerHTML=html;
 
 
 }
@@ -182,28 +313,21 @@ async function loadBills(){
 function openBill(b){
 
 
-    document.getElementById("home")
-    .classList.add("hidden");
+home.classList.add("hidden");
+
+detail.classList.remove("hidden");
 
 
-    document.getElementById("detail")
-    .classList.remove("hidden");
+title.innerText=b.title;
+
+amount.innerText=b.amount;
 
 
-
-    document.getElementById("title")
-    .innerText=b.title;
-
-
-    document.getElementById("amount")
-    .innerText=b.amount;
-
-
-    document.getElementById("qr")
-    .src=b.qr.replace(
-        "https://drive.google.com/file/d/",
-        "https://drive.google.com/uc?id="
-    ).split("/view")[0];
+qr.src=
+b.qr.replace(
+"https://drive.google.com/file/d/",
+"https://drive.google.com/uc?id="
+).split("/view")[0];
 
 
 }
@@ -212,19 +336,17 @@ function openBill(b){
 
 function back(){
 
-    document.getElementById("detail")
-    .classList.add("hidden");
 
+detail.classList.add("hidden");
 
-    document.getElementById("home")
-    .classList.remove("hidden");
+home.classList.remove("hidden");
+
 
 }
 
 
 
-
-loadBills();
+init();
 
 
 </script>
