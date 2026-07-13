@@ -1,453 +1,237 @@
-const LIFF_ID = "2010646520-HSdNTYeC";
+const SHEET_ID = "1rDzVUw_iP14Mx9phaofQBzBm_wk1kkzSe1QIMDmRPuw";
+const DRIVE_FOLDER_ID = "1LlqJADoKYwAmYKIvaAeXQPYhWBgBuGPE";
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbwWDvTyjfJP9yYY-j1VoQvwH06_gkCroRnrSxMPiBzDHOdDTVE3C_uk654F8XEL1mBj/exec";
-
-
-let lineUser = "";
-let lineId = "";
-let currentBill = null;
+const LINE_USERS_SHEET = "LineUsers";
+const BILLS_SHEET = "Bills";
+const PAYMENTS_SHEET = "Payments";
 
 
+// ================= GET =================
 
-// =======================
-// INIT
-// =======================
+function doGet(e){
 
-async function init(){
+  try{
 
-    try{
+    if(e.parameter.action=="getBills"){
 
-        await liff.init({
-            liffId: LIFF_ID
-        });
-
-
-        if(!liff.isLoggedIn()){
-
-            liff.login();
-            return;
-
-        }
-
-
-
-        const profile =
-        await liff.getProfile();
-
-
-
-        lineUser = profile.displayName;
-        lineId = profile.userId;
-
-
-
-        localStorage.setItem(
-            "lineId",
-            lineId
-        );
-
-
-        localStorage.setItem(
-            "lineName",
-            lineUser
-        );
-
-
-
-        document.getElementById("lineName").innerText =
-        "สวัสดี " + lineUser;
-
-
-
-        const oldID =
-        localStorage.getItem("studentId");
-
-
-
-        if(oldID){
-
-            showHome(oldID);
-
-        }
-
-
-    }catch(e){
-
-        console.log(e);
-
-    }
-
-}
-
-
-
-
-
-// =======================
-// LOGIN STUDENT
-// =======================
-
-async function saveUser(){
-
-
-    const studentId =
-    document.getElementById("studentId").value;
-
-
-
-    if(!studentId){
-
-        alert("กรอกรหัสนักศึกษาก่อน");
-
-        return;
+      return response({
+        success:true,
+        bills:getBills(e.parameter.studentId)
+      });
 
     }
 
 
-
-    localStorage.setItem(
-        "studentId",
-        studentId
-    );
-
-
-
-    await fetch(API_URL,{
-
-        method:"POST",
-
-        headers:{
-            "Content-Type":
-            "text/plain;charset=utf-8"
-        },
-
-
-        body:JSON.stringify({
-
-            action:"saveLineUser",
-
-            lineId:lineId,
-
-            displayName:lineUser,
-
-            studentId:studentId
-
-        })
-
-
+    return response({
+      success:false,
+      message:"No action"
     });
 
 
+  }catch(err){
 
-    showHome(studentId);
+    return response({
+      success:false,
+      error:String(err)
+    });
 
-
-}
-
-
-
-
-// =======================
-// SHOW HOME
-// =======================
-
-function showHome(id){
-
-
-    document
-    .getElementById("login")
-    .classList.add("hidden");
-
-
-
-    document
-    .getElementById("home")
-    .classList.remove("hidden");
-
-
-
-    document
-    .getElementById("user")
-    .innerText =
-    "👤 "+lineUser+" | "+id;
-
-
-
-    loadBills();
+  }
 
 }
 
 
 
+// ================= POST =================
 
+function doPost(e){
 
+  try{
 
-// =======================
-// LOAD BILL
-// =======================
-
-async function loadBills(){
-
-
-    const id =
-    localStorage.getItem("studentId");
-
-
-
-    const res =
-    await fetch(
-
-        API_URL+
-        "?action=getBills&studentId="
-        +id
-
-    );
-
+    Logger.log("POST START");
 
 
     const data =
-    await res.json();
+    JSON.parse(e.postData.contents);
 
 
+    Logger.log(JSON.stringify(data));
 
-    let html="";
 
+    // ===== PAYMENT =====
 
+    if(data.action=="payment"){
 
-    data.bills.forEach(b=>{
 
+      if(!data.slip){
 
-        html += `
+        throw new Error("ไม่มี slip");
 
-        <div class="item"
-        onclick='openBill(${JSON.stringify(b)})'>
+      }
 
 
-        📅 ${b.month}
+      let url =
+      uploadSlip(data.slip);
 
-        <br>
 
-        ${b.title}
+      Logger.log("DRIVE OK "+url);
 
-        <br>
 
-        💵 ${b.amount} บาท
 
-        <br>
+      savePayment({
 
-        สถานะ :
-        ${b.status}
+        studentId:data.studentId,
 
+        billId:data.billId,
 
-        </div>
+        slip:url
 
+      });
 
-        `;
 
 
-    });
+      Logger.log("SHEET PAYMENT OK");
 
 
 
-    document.getElementById("billList")
-    .innerHTML=html;
+      return response({
 
+        success:true,
 
-}
+        image:url
 
+      });
 
-
-
-
-
-// =======================
-// OPEN BILL
-// =======================
-
-function openBill(b){
-
-
-    currentBill=b;
-
-
-    document
-    .getElementById("home")
-    .classList.add("hidden");
-
-
-
-    document
-    .getElementById("detail")
-    .classList.remove("hidden");
-
-
-
-    document
-    .getElementById("title")
-    .innerText=b.title;
-
-
-
-    document
-    .getElementById("amount")
-    .innerText=b.amount;
-
-
-
-    document
-    .getElementById("billStatus")
-    .innerText=
-    "สถานะ : "+b.status;
-
-
-
-    document
-    .getElementById("qr")
-    .src=b.qr;
-
-
-}
-
-
-
-
-
-
-// =======================
-// SEND SLIP
-// =======================
-
-async function uploadSlip(){
-
-
-    const file =
-    document
-    .getElementById("slip")
-    .files[0];
-
-
-
-    if(!file){
-
-        alert("เลือกสลิปก่อน");
-
-        return;
 
     }
 
 
 
-    const reader =
-    new FileReader();
+    // ===== SAVE LINE =====
 
+    if(data.action=="saveLineUser"){
 
 
-    reader.onload=async function(e){
+      saveLineUser(
 
+        data.lineId,
 
+        data.displayName,
 
-        const body={
+        data.studentId
 
+      );
 
-            action:"payment",
 
+      return response({
 
-            studentId:
-            localStorage.getItem("studentId"),
+        success:true
 
+      });
 
-            billId:
-            currentBill.billId,
 
+    }
 
-            slip:
-            e.target.result
 
 
-        };
+    return response({
 
+      success:false,
 
+      message:"unknown"
 
-        alert("กำลังส่งสลิป...");
+    });
 
 
 
-        try{
+  }catch(err){
 
+    Logger.log(err);
 
-            const res =
-            await fetch(API_URL,{
 
-                method:"POST",
+    return response({
 
-                headers:{
+      success:false,
 
-                    "Content-Type":
-                    "text/plain;charset=utf-8"
+      error:String(err)
 
-                },
+    });
 
+  }
 
-                body:
-                JSON.stringify(body)
+}
 
-            });
 
 
 
-            const text =
-            await res.text();
+// ================= DRIVE =================
 
+function uploadSlip(base64){
 
 
-            console.log(text);
+  const folder =
+  DriveApp.getFolderById(DRIVE_FOLDER_ID);
 
 
 
-            const data =
-            JSON.parse(text);
+  base64 =
+  base64.replace(
+    /^data:image\/[^;]+;base64,/,
+    ""
+  );
 
 
 
-            if(data.success){
+  const blob =
+  Utilities.newBlob(
 
+    Utilities.base64Decode(base64),
 
-                alert("ส่งสลิปเรียบร้อย");
+    MimeType.JPEG,
 
-                loadBills();
+    "Slip_"+Date.now()+".jpg"
 
+  );
 
-            }else{
 
 
-                alert(
-                "ผิดพลาด : "
-                +data.error
-                );
+  const file =
+  folder.createFile(blob);
 
 
-            }
 
+  return "https://drive.google.com/uc?id="+file.getId();
 
 
-        }catch(err){
+}
 
-            console.log(err);
 
-            alert(
-            "ส่งไม่สำเร็จ"
-            );
 
-        }
 
+// ================= PAYMENT SHEET =================
 
+function savePayment(data){
 
-    };
 
+  const sheet =
+  SpreadsheetApp
+  .openById(SHEET_ID)
+  .getSheetByName(PAYMENTS_SHEET);
 
 
-    reader.readAsDataURL(file);
+
+  sheet.appendRow([
+
+    data.studentId,
+
+    data.billId,
+
+    "รอตรวจ",
+
+    data.slip,
+
+    new Date()
+
+  ]);
 
 
 }
@@ -456,20 +240,128 @@ async function uploadSlip(){
 
 
 
-function back(){
+// ================= LINE SHEET =================
 
-    document
-    .getElementById("detail")
-    .classList.add("hidden");
+function saveLineUser(
+lineId,
+name,
+studentId
+){
 
 
-    document
-    .getElementById("home")
-    .classList.remove("hidden");
+  const sheet =
+  SpreadsheetApp
+  .openById(SHEET_ID)
+  .getSheetByName(LINE_USERS_SHEET);
+
+
+
+  sheet.appendRow([
+
+    lineId,
+
+    name,
+
+    studentId,
+
+    new Date()
+
+  ]);
+
 
 }
 
 
 
 
-init();
+
+// ================= BILL =================
+
+function getBills(studentId){
+
+
+  const ss =
+  SpreadsheetApp.openById(SHEET_ID);
+
+
+  const bills =
+  ss.getSheetByName(BILLS_SHEET)
+  .getDataRange()
+  .getValues();
+
+
+  const payments =
+  ss.getSheetByName(PAYMENTS_SHEET)
+  .getDataRange()
+  .getValues();
+
+
+
+  let result=[];
+
+
+
+  for(let i=1;i<bills.length;i++){
+
+
+    let status="ยังไม่จ่าย";
+
+
+    for(let j=1;j<payments.length;j++){
+
+
+      if(
+        String(payments[j][0])==String(studentId)
+        &&
+        String(payments[j][1])==String(bills[i][0])
+      ){
+
+        status=payments[j][2];
+
+      }
+
+
+    }
+
+
+    result.push({
+
+      billId:bills[i][0],
+
+      month:bills[i][1],
+
+      title:bills[i][2],
+
+      amount:bills[i][3],
+
+      qr:bills[i][4],
+
+      status:status
+
+    });
+
+
+  }
+
+
+  return result;
+
+
+}
+
+
+
+
+// ================= RESPONSE =================
+
+function response(obj){
+
+  return ContentService
+  .createTextOutput(
+    JSON.stringify(obj)
+  )
+  .setMimeType(
+    ContentService.MimeType.JSON
+  );
+
+}
