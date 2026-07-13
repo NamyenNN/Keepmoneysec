@@ -10,9 +10,7 @@ let currentBill = null;
 
 
 
-// =======================
-// INIT LINE
-// =======================
+// ================= INIT =================
 
 async function init(){
 
@@ -31,26 +29,17 @@ async function init(){
         }
 
 
-        const profile =
-        await liff.getProfile();
-
+        const profile = await liff.getProfile();
 
 
         lineUser = profile.displayName;
+
         lineId = profile.userId;
 
 
 
-        localStorage.setItem(
-            "lineId",
-            lineId
-        );
-
-
-        localStorage.setItem(
-            "lineName",
-            lineUser
-        );
+        localStorage.setItem("lineId", lineId);
+        localStorage.setItem("lineName", lineUser);
 
 
 
@@ -61,7 +50,6 @@ async function init(){
 
         const oldStudent =
         localStorage.getItem("studentId");
-
 
 
         if(oldStudent){
@@ -82,10 +70,7 @@ async function init(){
 
 
 
-
-// =======================
-// SAVE USER
-// =======================
+// ================= SAVE USER =================
 
 async function saveUser(){
 
@@ -98,7 +83,6 @@ async function saveUser(){
     if(!studentId){
 
         alert("กรอกรหัสนักศึกษาก่อน");
-
         return;
 
     }
@@ -117,8 +101,7 @@ async function saveUser(){
         method:"POST",
 
         headers:{
-            "Content-Type":
-            "text/plain;charset=utf-8"
+            "Content-Type":"text/plain;charset=utf-8"
         },
 
         body:JSON.stringify({
@@ -139,16 +122,13 @@ async function saveUser(){
 
     showHome(studentId);
 
-
 }
 
 
 
 
 
-// =======================
-// SHOW HOME
-// =======================
+// ================= HOME =================
 
 function showHome(id){
 
@@ -163,11 +143,7 @@ function showHome(id){
 
 
     document.getElementById("user").innerText =
-
-    "👤 "
-    + lineUser
-    + " | "
-    + id;
+    "👤 "+lineUser+" | "+id;
 
 
 
@@ -178,10 +154,7 @@ function showHome(id){
 
 
 
-
-// =======================
-// LOAD BILL
-// =======================
+// ================= LOAD BILL =================
 
 async function loadBills(){
 
@@ -191,11 +164,12 @@ async function loadBills(){
 
 
 
-    const res =
-    await fetch(
+    const res = await fetch(
+
         API_URL+
-        "?action=getBills&studentId="
-        +id
+        "?action=getBills&studentId="+id+
+        "&t="+Date.now()
+
     );
 
 
@@ -226,20 +200,13 @@ async function loadBills(){
         onclick='openBill(${JSON.stringify(b)})'>
 
 
-        📅 ${b.month}
+        📅 ${b.month}<br>
 
-        <br>
+        ${b.title}<br>
 
-        ${b.title}
+        💵 ${b.amount} บาท<br>
 
-        <br>
-
-        💵 ${b.amount} บาท
-
-        <br>
-
-        สถานะ :
-        ${b.status}
+        สถานะ : ${b.status}
 
 
         </div>
@@ -261,9 +228,7 @@ async function loadBills(){
 
 
 
-// =======================
-// OPEN BILL
-// =======================
+// ================= OPEN BILL =================
 
 function openBill(b){
 
@@ -276,31 +241,26 @@ function openBill(b){
     .classList.add("hidden");
 
 
-
     document.getElementById("detail")
     .classList.remove("hidden");
 
 
 
     document.getElementById("title")
-    .innerText = b.title;
-
+    .innerText=b.title;
 
 
     document.getElementById("amount")
-    .innerText = b.amount;
-
+    .innerText=b.amount;
 
 
     document.getElementById("billStatus")
-    .innerText =
-    "สถานะ : "
-    + b.status;
+    .innerText="สถานะ : "+b.status;
 
 
 
     document.getElementById("qr")
-    .src = b.qr;
+    .src=b.qr;
 
 
 }
@@ -309,9 +269,7 @@ function openBill(b){
 
 
 
-// =======================
-// SEND SLIP
-// =======================
+// ================= SEND SLIP =================
 
 async function uploadSlip(){
 
@@ -324,7 +282,6 @@ async function uploadSlip(){
     if(!file){
 
         alert("เลือกสลิปก่อน");
-
         return;
 
     }
@@ -334,15 +291,13 @@ async function uploadSlip(){
     if(!currentBill){
 
         alert("ไม่พบบิล");
-
         return;
 
     }
 
 
 
-    const reader =
-    new FileReader();
+    const reader = new FileReader();
 
 
 
@@ -350,9 +305,11 @@ async function uploadSlip(){
 
 
 
-        const body = {
+        const body={
+
 
             action:"payment",
+
 
             studentId:
             localStorage.getItem("studentId"),
@@ -365,6 +322,7 @@ async function uploadSlip(){
             slip:
             e.target.result
 
+
         };
 
 
@@ -376,8 +334,7 @@ async function uploadSlip(){
 
 
 
-            const res =
-            await fetch(API_URL,{
+            const res = await fetch(API_URL,{
 
                 method:"POST",
 
@@ -388,8 +345,7 @@ async function uploadSlip(){
 
                 },
 
-                body:
-                JSON.stringify(body)
+                body:JSON.stringify(body)
 
             });
 
@@ -413,21 +369,22 @@ async function uploadSlip(){
 
                 // กลับหน้าแรก
 
-                document
-                .getElementById("detail")
+                document.getElementById("detail")
                 .classList.add("hidden");
 
 
-
-                document
-                .getElementById("home")
+                document.getElementById("home")
                 .classList.remove("hidden");
 
 
 
-                // โหลดสถานะใหม่
+                // รอให้ sheet update
 
-                loadBills();
+                setTimeout(()=>{
+
+                    loadBills();
+
+                },1500);
 
 
 
@@ -435,8 +392,8 @@ async function uploadSlip(){
 
 
                 alert(
-                    "ส่งไม่สำเร็จ\n"+
-                    data.error
+                "ส่งไม่สำเร็จ\n"+
+                data.error
                 );
 
 
@@ -446,14 +403,13 @@ async function uploadSlip(){
 
         }catch(err){
 
+
             console.log(err);
 
-            alert(
-                "ส่งไม่สำเร็จ"
-            );
+            alert("ส่งไม่สำเร็จ");
+
 
         }
-
 
 
     };
@@ -468,10 +424,7 @@ async function uploadSlip(){
 
 
 
-
-// =======================
-// BACK
-// =======================
+// ================= BACK =================
 
 function back(){
 
@@ -484,8 +437,9 @@ function back(){
     .classList.remove("hidden");
 
 
-}
+    loadBills();
 
+}
 
 
 
