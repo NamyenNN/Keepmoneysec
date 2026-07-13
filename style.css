@@ -1,0 +1,203 @@
+*{
+    box-sizing:border-box;
+}
+
+
+body{
+
+    font-family: "Arial", sans-serif;
+
+    background:
+    linear-gradient(135deg,#0f172a,#1e3a8a);
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:20px;
+
+}
+
+
+/* กล่องหลัก */
+
+.card{
+
+    background:#ffffff;
+
+    width:100%;
+
+    max-width:420px;
+
+    padding:30px;
+
+    border-radius:25px;
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,0.35);
+
+}
+
+
+/* หัวข้อ */
+
+h1{
+
+    text-align:center;
+
+    color:#0f172a;
+
+    margin-bottom:20px;
+
+}
+
+
+h2{
+
+    color:#1e40af;
+
+}
+
+
+
+/* input */
+
+input{
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:12px;
+
+    border-radius:12px;
+
+    border:1px solid #cbd5e1;
+
+    font-size:16px;
+
+    outline:none;
+
+}
+
+
+input:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 3px #2563eb33;
+
+}
+
+
+
+/* ปุ่ม */
+
+button{
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:18px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:
+    linear-gradient(135deg,#2563eb,#06b6d4);
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 8px 20px #2563eb55;
+
+}
+
+
+
+/* รายการบิล */
+
+.item{
+
+    background:#f8fafc;
+
+    border-left:5px solid #2563eb;
+
+    padding:16px;
+
+    border-radius:15px;
+
+    margin-top:15px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+.item:hover{
+
+    transform:scale(1.02);
+
+    background:#eff6ff;
+
+}
+
+
+
+/* QR */
+
+img{
+
+    width:100%;
+
+    max-width:300px;
+
+    display:block;
+
+    margin:20px auto;
+
+    border-radius:15px;
+
+}
+
+
+
+/* ซ่อน */
+
+.hidden{
+
+    display:none;
+
+}
+
+
+/* สถานะ */
+
+.status{
+
+    color:#64748b;
+
+}
