@@ -38,7 +38,6 @@ async function init(){
     document.getElementById("lineName").innerText =
     "สวัสดี " + lineUser;
 
-
 }
 
 
@@ -62,9 +61,7 @@ function saveUser(){
 
 
     localStorage.setItem("studentId",id);
-
     localStorage.setItem("lineName",lineUser);
-
 
 
     document.getElementById("login")
@@ -75,10 +72,8 @@ function saveUser(){
     .classList.remove("hidden");
 
 
-
     document.getElementById("user").innerText =
     "👤 " + lineUser + " | " + id;
-
 
 
     loadBills();
@@ -93,10 +88,8 @@ function saveUser(){
 
 async function loadBills(){
 
-
     const studentId =
     localStorage.getItem("studentId");
-
 
 
     const res =
@@ -107,22 +100,18 @@ async function loadBills(){
     );
 
 
-
     const data =
     await res.json();
-
 
 
     let html = "";
 
 
+    if(!data.bills || data.bills.length === 0){
 
-    if(data.bills.length===0){
-
-        html="ยังไม่มีรายการ";
+        html = "ยังไม่มีรายการ";
 
     }
-
 
 
     data.bills.forEach(b=>{
@@ -139,25 +128,19 @@ async function loadBills(){
         );
 
 
-
         html += `
 
         <div class="item"
         onclick='openBill(${JSON.stringify(b)})'>
 
-
         📅 ${date}<br>
-
 
         ${b.title}<br>
 
-
         💵 ${b.amount} บาท<br>
-
 
         สถานะ :
         ${b.status || "ยังไม่จ่าย"}
-
 
         </div>
 
@@ -167,10 +150,8 @@ async function loadBills(){
     });
 
 
-
     document.getElementById("billList")
     .innerHTML = html;
-
 
 }
 
@@ -182,53 +163,42 @@ async function loadBills(){
 
 function openBill(b){
 
-
     currentBill = b;
-
 
 
     document.getElementById("home")
     .classList.add("hidden");
 
 
-
     document.getElementById("detail")
     .classList.remove("hidden");
-
 
 
     document.getElementById("title").innerText =
     b.title;
 
 
-
     document.getElementById("amount").innerText =
     b.amount;
 
 
-
     document.getElementById("billStatus").innerText =
-    "สถานะ : " +
+    "สถานะ : " + 
     (b.status || "ยังไม่จ่าย");
-
 
 
     document.getElementById("qr").src =
     b.qr;
 
 
-
     document.getElementById("slip").value="";
-
 
 
     document.getElementById("preview").src="";
 
 
-
     document.getElementById("preview")
     .classList.add("hidden");
-
 
 }
 
@@ -240,40 +210,30 @@ function openBill(b){
 
 function previewSlip(event){
 
-
     const file =
     event.target.files[0];
 
 
-
     if(!file) return;
-
 
 
     const reader =
     new FileReader();
 
 
-
     reader.onload=function(e){
 
-
         document.getElementById("preview")
-        .src =
-        e.target.result;
-
+        .src=e.target.result;
 
 
         document.getElementById("preview")
         .classList.remove("hidden");
 
-
-    }
-
+    };
 
 
     reader.readAsDataURL(file);
-
 
 }
 
@@ -293,11 +253,9 @@ async function uploadSlip(){
     if(!file){
 
         alert("กรุณาเลือกสลิป");
-
         return;
 
     }
-
 
 
     const reader =
@@ -308,16 +266,9 @@ async function uploadSlip(){
     reader.onload = async function(e){
 
 
-        const base64 =
-        e.target.result;
-
-
-
         const body = {
 
-
             action:"payment",
-
 
             studentId:
             localStorage.getItem("studentId"),
@@ -328,8 +279,7 @@ async function uploadSlip(){
 
 
             slip:
-            base64
-
+            e.target.result
 
         };
 
@@ -338,39 +288,31 @@ async function uploadSlip(){
         alert("กำลังส่งสลิป...");
 
 
-
         try{
 
 
             const res =
             await fetch(API_URL,{
 
-
                 method:"POST",
-
-
-                headers:{
-
-
-                    "Content-Type":"application/json"
-
-                },
-
 
                 body:
                 JSON.stringify(body)
-
 
             });
 
 
 
+            const text =
+            await res.text();
+
+
+            console.log(text);
+
+
+
             const data =
-            await res.json();
-
-
-
-            console.log(data);
+            JSON.parse(text);
 
 
 
@@ -380,19 +322,16 @@ async function uploadSlip(){
                 alert("ส่งสลิปเรียบร้อย");
 
 
-                // โหลดสถานะใหม่
                 loadBills();
-
 
 
             }else{
 
 
                 alert(
-                    "ส่งไม่สำเร็จ\n" +
+                    "ส่งไม่สำเร็จ\n"+
                     data.error
                 );
-
 
             }
 
@@ -408,13 +347,10 @@ async function uploadSlip(){
                 "เกิดข้อผิดพลาดในการส่ง"
             );
 
-
         }
 
 
-
     };
-
 
 
     reader.readAsDataURL(file);
@@ -424,22 +360,18 @@ async function uploadSlip(){
 
 
 
-
 // =======================
 // BACK
 // =======================
 
 function back(){
 
-
     document.getElementById("detail")
     .classList.add("hidden");
 
 
-
     document.getElementById("home")
     .classList.remove("hidden");
-
 
 }
 
