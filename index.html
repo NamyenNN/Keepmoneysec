@@ -36,6 +36,8 @@ placeholder="เลขนักศึกษา">
 
 </div>
 
+
+
 <!-- HOME -->
 <div id="home" class="hidden">
 
@@ -49,23 +51,57 @@ placeholder="เลขนักศึกษา">
 
 </div>
 
+
+
 <!-- DETAIL -->
 <div id="detail" class="hidden">
 
 <h1 id="title"></h1>
 
 <h2>
-ยอด:
+
+ยอด :
 <span id="amount"></span>
 บาท
+
 </h2>
 
 <p id="billStatus"></p>
 
-<img id="qr" alt="QR PromptPay">
+<img
+id="qr"
+alt="QR PromptPay">
 
-<button onclick="back()">
-กลับ
+<hr>
+
+<h3>📸 แนบสลิปการโอน</h3>
+
+<input
+type="file"
+id="slip"
+accept="image/*"
+onchange="previewSlip(event)">
+
+<img
+id="preview"
+class="hidden"
+alt="Preview Slip">
+
+<button
+id="uploadBtn"
+onclick="uploadSlip()">
+
+ส่งสลิป
+
+</button>
+
+<br><br>
+
+<button
+onclick="back()">
+
+← กลับ
+
 </button>
 
 </div>
