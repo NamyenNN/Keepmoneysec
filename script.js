@@ -285,20 +285,16 @@ function previewSlip(event){
 
 async function uploadSlip(){
 
-
     const file =
     document.getElementById("slip")
     .files[0];
 
 
-
     if(!file){
-
 
         alert("กรุณาเลือกสลิป");
 
         return;
-
 
     }
 
@@ -312,9 +308,8 @@ async function uploadSlip(){
     reader.onload = async function(e){
 
 
-
         const base64 =
-        e.target.result.split(",")[1];
+        e.target.result;
 
 
 
@@ -359,7 +354,6 @@ async function uploadSlip(){
 
                     "Content-Type":"application/json"
 
-
                 },
 
 
@@ -386,12 +380,17 @@ async function uploadSlip(){
                 alert("ส่งสลิปเรียบร้อย");
 
 
+                // โหลดสถานะใหม่
+                loadBills();
+
+
+
             }else{
 
 
                 alert(
-                "ส่งไม่สำเร็จ\n"+
-                data.error
+                    "ส่งไม่สำเร็จ\n" +
+                    data.error
                 );
 
 
@@ -405,7 +404,9 @@ async function uploadSlip(){
             console.log(err);
 
 
-            alert("เกิดข้อผิดพลาดในการส่ง");
+            alert(
+                "เกิดข้อผิดพลาดในการส่ง"
+            );
 
 
         }
@@ -419,9 +420,7 @@ async function uploadSlip(){
     reader.readAsDataURL(file);
 
 
-
 }
-
 
 
 
