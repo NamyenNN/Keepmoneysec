@@ -143,48 +143,108 @@ function compressImage(file, maxSize, callback) {
     reader.readAsDataURL(file);
 }
 
-// ================= SEND SLIP (อัปเดตให้บีบอัดรูปก่อนส่ง) =================
+// ================= SEND SLIP =================
 async function uploadSlip(){
+
     const file = document.getElementById("slip").files[0];
 
-    if(!file){ alert("เลือกสลิปก่อน"); return; }
-    if(!currentBill){ alert("ไม่พบบิล"); return; }
+    if(!file){
+        alert("เลือกสลิปก่อน");
+        return;
+    }
 
-    // เรียกใช้ฟังก์ชันบีบอัดรูป กำหนดขนาดสูงสุด 800px
-    compressImage(file, 800, async function(compressedBase64) {
+    if(!currentBill){
+        alert("ไม่พบบิล");
+        return;
+    }
+
+
+    compressImage(file,800,async function(compressedBase64){
+
+        // ตัด data:image/jpeg;base64, ออก
+        const base64 = compressedBase64.split(",")[1];
+
+
         const body={
+
             action:"payment",
-            studentId: localStorage.getItem("studentId"),
-            billId: currentBill.billId,
-            slip: compressedBase64 // ส่งไฟล์ที่บีบอัดแล้วไปแทน
+
+            studentId:localStorage.getItem("studentId"),
+
+            billId:currentBill.billId,
+
+            slip:base64,
+
+            fileName:"slip_" + Date.now() + ".jpg",
+
+            mimeType:"image/jpeg"
+
         };
 
+
         try{
+
             alert("กำลังส่งสลิป รอแป๊บนึงนะ...");
+
+
             const res = await fetch(API_URL,{
+
                 method:"POST",
-                headers:{ "Content-Type": "text/plain;charset=utf-8" },
+
+                headers:{
+                    "Content-Type":"text/plain;charset=utf-8"
+                },
+
                 body:JSON.stringify(body)
+
             });
 
+
             const data = await res.json();
-            console.log(data);
+
+
+            console.log("ผลส่งสลิป =",data);
+
+
 
             if(data.success){
-                alert("ส่งสลิปเรียบร้อย");
-                document.getElementById("detail").classList.add("hidden");
-                document.getElementById("home").classList.remove("hidden");
-                setTimeout(()=>{ loadBills(); }, 1500);
-            }else{
-                alert("ส่งไม่สำเร็จ\n"+ data.error);
-            }
-        }catch(err){
-            console.log(err);
-            alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
-        }
-    });
-}
 
+                alert("ส่งสลิปเรียบร้อย");
+
+
+                document.getElementById("detail").classList.add("hidden");
+
+                document.getElementById("home").classList.remove("hidden");
+
+
+                setTimeout(()=>{
+
+                    loadBills();
+
+                },1500);
+
+
+            }else{
+
+                alert(
+                    "ส่งไม่สำเร็จ\n"+
+                    data.error
+                );
+
+            }
+
+
+        }catch(err){
+
+            console.log(err);
+
+            alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
+
+        }
+
+    });
+
+}
 // ================= DELETE IMAGE (ฟังก์ชันใหม่ เอาไว้ลบรูป) =================
 async function deleteImage(fileUrl) {
     if(!confirm("แน่ใจนะว่าจะลบรูปนี้?")) return;
