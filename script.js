@@ -1,6 +1,6 @@
 const LIFF_ID = "2010646520-HSdNTYeC"; 
 // ⚠️ อย่าลืมอัปเดต API_URL ใหม่ ถ้าเพิ่ง Deploy GAS เป็น New Version
-const API_URL = "https://script.google.com/macros/s/AKfycby96lqo7cXIutu8wIO5DfpW1BmtnxBTHOentlLCJIrkgk0Lztdg2vxsjOTfRMuybzYX/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxWXZ1mCsujKlr0ACgY2P7uElphWEUU038dEzXmK9ZUuOaIaFJR50eYcs3gwNl-3DV4Pg/exec";
 
 let lineUser = "";
 let lineId = "";
