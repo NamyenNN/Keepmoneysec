@@ -74,6 +74,9 @@ async function loadBills(){
     try {
         const res = await fetch(API_URL + "?action=getBills&studentId=" + id + "&t=" + Date.now());
         const data = await res.json();
+
+        console.log("ข้อมูลจาก Apps Script =", data);
+
         let html="";
 
         if(!data.bills || data.bills.length===0){
